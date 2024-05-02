@@ -1,0 +1,104 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#Input_AccounType').change(function () {
+                var accountType = $(this).val();
+                if (accountType === 'jobseeker') {
+                    $('.jobseeker-fields').show();
+                    $('.employer-fields').hide();
+                } else if (accountType === 'employer') {
+                    $('.jobseeker-fields').hide();
+                    $('.employer-fields').show();
+                } else {
+                    $('.jobseeker-fields').hide();
+                    $('.employer-fields').hide();
+                }
+            });
+        });
+    </script>
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Chọn loại tài khoản -->
+            <div class="form-group">
+                <label asp-for="Input.AccounType"></label>
+                <select asp-for="Input.AccounType" class="form-control">
+                    <option value="jobseeker">Job Seeker</option>
+                    <option value="employer">Employer</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <span asp-validation-for="Input.AccounType" class="text-danger"></span>
+            </div>
+
+            <div class="jobseeker-fields" style="display: block;">
+                <div class="form-group">
+                    <label asp-for="Input.JobSeekerFullName">FullName</label>
+                    <input asp-for="Input.JobSeekerFullName" class="form-control" />
+                    <span asp-validation-for="Input.JobSeekerFullName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.JobSeekerAddress">Address</label>
+                    <input asp-for="Input.JobSeekerAddress" class="form-control" />
+                    <span asp-validation-for="Input.JobSeekerAddress" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.JobSeekerPhone">Phone</label>
+                    <input asp-for="Input.JobSeekerPhone" class="form-control" />
+                    <span asp-validation-for="Input.JobSeekerPhone" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="employer-fields" style="display: none;">
+                <div class="form-group">
+                    <label asp-for="Input.CompanyName">CompanyName</label>
+                    <input asp-for="Input.CompanyName" class="form-control" />
+                    <span asp-validation-for="Input.CompanyName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.EmployerAddress">Address</label>
+                    <input asp-for="Input.EmployerAddress" class="form-control" />
+                    <span asp-validation-for="Input.EmployerAddress" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.EmployerPhone">Phone</label>
+                    <input asp-for="Input.EmployerPhone" class="form-control" />
+                    <span asp-validation-for="Input.EmployerPhone" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.Email"></label>
+                <input asp-for="Input.Email" class="form-control" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.Password"></label>
+                <input asp-for="Input.Password" type="password" class="form-control" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.ConfirmPassword"></label>
+                <input asp-for="Input.ConfirmPassword" type="password" class="form-control" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+</div>
