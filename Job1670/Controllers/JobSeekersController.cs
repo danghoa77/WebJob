@@ -105,10 +105,9 @@ namespace Job1670.Controllers
                 {
                     await _userManager.AddToRoleAsync(user, "JobSeeker");
 
-                    // Tạo JobSeeker với ApplicationUserId là ID của người dùng mới tạo
                     var jobSeeker = new JobSeeker
                     {
-                        JobSeekerId = user.Id, // Sử dụng ID người dùng cho JobSeekerId nếu bạn muốn
+                        JobSeekerId = user.Id, 
                         ApplicationUserId = user.Id,
                         FullName = jobSeekerModel.FullName,
                         Phone = jobSeekerModel.Phone,
@@ -130,8 +129,6 @@ namespace Job1670.Controllers
                     }
                 }
             }
-
-            // Nếu xử lý bị lỗi hoặc ModelState không hợp lệ, vẫn trả về trang View hiện tại với dữ liệu
             ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id", jobSeekerModel.ApplicationUserId);
             return View(jobSeekerModel);
         }
@@ -219,7 +216,6 @@ namespace Job1670.Controllers
 
             if (jobSeeker != null)
             {
-                // Xóa ApplicationUser liên kết
                 if (jobSeeker.ApplicationUserId != null)
                 {
                     var user = await _userManager.FindByIdAsync(jobSeeker.ApplicationUserId);
@@ -233,7 +229,6 @@ namespace Job1670.Controllers
                     }
                 }
 
-                // Xóa JobSeeker
                 _context.JobSeekers.Remove(jobSeeker);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

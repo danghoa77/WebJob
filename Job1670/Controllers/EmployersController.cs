@@ -184,8 +184,10 @@ namespace Job1670.Controllers
                 return Problem("Entity set 'ApplicationDbContext.Employers'  is null.");
             }
             var employer = await _context.Employers.FindAsync(id);
+            var user = await _userManager.FindByIdAsync(employer.ApplicationUserId);
             if (employer != null)
             {
+                await _userManager.DeleteAsync(user);
                 _context.Employers.Remove(employer);
             }
 
