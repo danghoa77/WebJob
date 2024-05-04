@@ -32,8 +32,8 @@
                     <option value="processing" class="btn btn-outline-warning" style="text-align: left;">Processing</option>
                     @if (User.IsInRole("Admin"))
                     {
-                        <option value="inactive" class="btn btn-outline-danger" style="text-align: left;">Inactive</option>
-                        <option value="operating" class="btn btn-outline-success" style="text-align: left;">Operating</option>
+                        <option value="denied" class="btn btn-outline-danger" style="text-align: left;">Denied</option>
+                        <option value="accept" class="btn btn-outline-success" style="text-align: left;">Accept</option>
                     }
                 </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
