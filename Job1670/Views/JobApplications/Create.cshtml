@@ -28,7 +28,14 @@
             </div>
             <div class="form-group">
                 <label asp-for="Status" class="control-label"></label>
-                <input asp-for="Status" class="form-control" />
+                <select asp-for="Status" class="form-control">
+                    <option value="processing" class="btn btn-outline-warning" style="text-align: left;">Processing</option>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <option value="inactive" class="btn btn-outline-danger" style="text-align: left;">Inactive</option>
+                        <option value="operating" class="btn btn-outline-success" style="text-align: left;">Operating</option>
+                    }
+                </select>
                 <span asp-validation-for="Status" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -47,4 +54,4 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-}
+

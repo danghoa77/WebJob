@@ -63,11 +63,11 @@ namespace Job1670.Controllers
             {
                 _context.Add(category);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                TempData["success"] = "Create successful category.";
             }
-            return View(category);
+            return RedirectToAction(nameof(Index));
         }
-        [Authorize(Roles = "Admin,Employer")]
+        [Authorize(Roles = "Admin")]
         // GET: Categories/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {

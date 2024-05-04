@@ -4,12 +4,13 @@
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<partial name="_Alert" />
+<h1>List Applications</h1>
 
-<h1>Index</h1>
-
-<p>
+@if (User.IsInRole("Admin"))
+{
     <a asp-action="Create">Create New</a>
-</p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -32,10 +33,10 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Listing.EmployerId)
+                @Html.DisplayFor(modelItem => item.Listing.Title)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.JobSeeker.JobSeekerId)
+                @Html.DisplayFor(modelItem => item.JobSeeker.FullName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.CoverLetter)
@@ -44,9 +45,16 @@
                 @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.JobApplicationId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.JobApplicationId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.JobApplicationId">Delete</a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.JobApplicationId">Edit</a>
+                    } |
+
+                    <a asp-action="Details" asp-route-id="@item.JobApplicationId">Details</a>|
+                    @if (User.IsInRole("Admin") || User.IsInRole("JobSeeker"))
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.JobApplicationId">Delete</a>
+                    }
             </td>
         </tr>
 }

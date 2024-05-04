@@ -31,9 +31,6 @@ namespace Job1670.Controllers
             public string Address { get; set; }
 
             public string? Detail { get; set; }
-
-            public virtual List<JobApplication> ApprovedJobApplications { get; set; } = new List<JobApplication>();
-
             public string Phone { get; set; }
 
             public string Email { get; set; }
@@ -64,6 +61,7 @@ namespace Job1670.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
+
         // GET: Employers/Details/5
         public async Task<IActionResult> Details(string? id)
         {
@@ -87,6 +85,7 @@ namespace Job1670.Controllers
         // GET: Employers/Create
         public IActionResult Create()
         {
+            ViewData["EmployerId"] = new SelectList(_context.Users, "Id", "Id");
             ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
@@ -96,28 +95,55 @@ namespace Job1670.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] Employer employer)
+        public async Task<IActionResult> Create([Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] employerModelBind employer)
         {
 
             if (ModelState.IsValid)
             {
-                _context.Add(employer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                var user = new ApplicationUser { UserName = employer.Email, Email = employer.Email };
+                var result = await _userManager.CreateAsync(user, "DefaultPassword@123");
+
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(user, "Employer");
+
+                    var emp = new Employer
+                    {
+                        EmployerId = user.Id,
+                        ApplicationUserId = user.Id,
+                        CompanyName = employer.CompanyName,
+                        Phone = employer.Phone,
+                        Address = employer.Address,
+                        Detail = employer.Detail,
+                        Email = employer.Email,
+                    };
+
+                    _context.Add(emp);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
             }
             ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id", employer.ApplicationUserId);
+            TempData["success"] = "Succesfully";
             return View(employer);
         }
         [Authorize(Roles = "Admin, Employer")]
-        // GET: Employers/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [AcceptVerbs("GET", "POST", Route = "Employer/Edit/{id}")]
+        public async Task<IActionResult> Edit(string? id)
         {
             if (id == null || _context.Employers == null)
             {
                 return NotFound();
             }
 
-            var employer = await _context.Employers.FindAsync(id);
+            var employer = await _context.Employers.FindAsync(id.ToString());
             if (employer == null)
             {
                 return NotFound();
@@ -129,16 +155,15 @@ namespace Job1670.Controllers
         // POST: Employers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] employerModelBind employer)
+        public async Task<IActionResult> Edit(string id, [Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] employerModelBind employer)
         {
             if (!ModelState.IsValid)
             {
                 ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id", employer.ApplicationUserId);
                 return View(employer);
             }
-            var emp = await _context.Employers.FindAsync(id);
+            var emp = await _context.Employers.FindAsync(id.ToString());
             if (emp == null)
             {
                 return NotFound();

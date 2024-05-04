@@ -135,7 +135,8 @@ namespace Job1670.Controllers
 
         [Authorize(Roles = "Admin, JobSeeker")]
         // GET: JobSeekers/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [AcceptVerbs("GET", "POST", Route = "JobSeeker/Edit/{id}")]
+        public async Task<IActionResult> Edit(string? id)
         {
             if (id == null || _context.JobSeekers == null)
             {
@@ -154,9 +155,9 @@ namespace Job1670.Controllers
         // POST: JobSeekers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("FullName,Phone,Address,Detail,Email,CV,ApplicationUserId")] jobseekerModelBind jobSeeker)
+        public async Task<IActionResult> Edit(string id, [Bind("FullName,Phone,Address,Detail,Email,CV,ApplicationUserId")] jobseekerModelBind jobSeeker)
         {
             if (!ModelState.IsValid)
             {

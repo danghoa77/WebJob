@@ -2,7 +2,11 @@
 @using Job1670.Services
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<ApplicationUser> UserManager
-
+<style>
+    ul{
+        list-style-type: none;
+    }
+</style>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,19 +29,23 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">| Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Listings" asp-action="Index" style="font-size:1em">Listings</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index" style="font-size:1em">Categories</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Listings" asp-action="Index" style="font-size:1em">| Listings</a>
                         </li>
 
+                        
                         @if (User.IsInRole("Employer") || User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Employers" asp-action="Index" style="font-size:1em">Employers</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Employers" asp-action="Index" style="font-size:1em">| Employer Information</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Categories" asp-action="Index" style="font-size:1em">| Categories</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Listings" asp-action="Index1" style="font-size:1em">| List Application</a>
                             </li>
 
 
@@ -45,13 +53,30 @@
                         @if (User.IsInRole("JobSeeker") || User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="JobApplications" asp-action="Index" style="font-size:1em">JobApplication</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="JobApplications" asp-action="Index" style="font-size:1em">| List JobApplication</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="JobSeekers" asp-action="Index" style="font-size:1em">JobSeekers</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="JobSeekers" asp-action="Index" style="font-size:1em">| JobSeeker Information</a>
                             </li>
                         }
                     </ul>
+                    <ul>
+                             @if (User.IsInRole("JobSeeker") || User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="JobApplications" asp-action="Create" style="font-size:1em">| Apply</a>
+                            </li>
+                        }
+                    </ul>
+                        <ul >
+                        @if (User.IsInRole("Employer") || User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Listings" asp-action="Create" style="font-size:1em">| Post Job</a>
+                            </li>
+                        }
+                    </ul>
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>

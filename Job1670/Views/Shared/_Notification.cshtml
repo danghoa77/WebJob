@@ -1,0 +1,21 @@
+﻿@if (TempData["success"] != null)
+{
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+	<script type="text/javascript">
+		toastr.success('@TempData["success"]');
+	</script>
+}
+<style>
+    #toast-container {
+        position: fixed;
+        z-index: 9999;
+        top: 20px;
+        right: 20px; /* Điều chỉnh vị trí từ bên phải sang */
+        width: 15em; /* Điều chỉnh chiều rộng của container */
+    }
+
+    .toast-success {
+        background-color: #28a745 !important; /* Màu xanh dương */
+    }
+</style>

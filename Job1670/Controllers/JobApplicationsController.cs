@@ -8,16 +8,21 @@ using Microsoft.EntityFrameworkCore;
 using Job1670.Data;
 using Job1670.Models;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Job1670.Controllers
 {
     public class JobApplicationsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public JobApplicationsController(ApplicationDbContext context)
+        public JobApplicationsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
+            _userManager = userManager;
             _context = context;
+            _signInManager = signInManager;
         }
         public class jobappModelBind
         {
@@ -30,11 +35,98 @@ namespace Job1670.Controllers
 
             public string Status { get; set; }
         }
+
+        public async Task<IActionResult> Apply()
+        {
+            int selectedJobId = 1; // Thay đổi giá trị này bằng cách lấy JobId từ form hoặc dữ liệu khác
+
+            return RedirectToAction("CreateFromListing", "JobApplications", new { jobId = selectedJobId });
+        }
+        public async Task<IActionResult> CreateFromListing()
+        {
+            //ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName");
+            //ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
+            //return View();
+            var user = await _userManager.GetUserAsync(User);
+            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            if (!isAdmin)
+            {
+                ViewData["JobSeekerId"] = new List<SelectListItem>
+                {
+                     new SelectListItem { Text = user.UserName, Value = user.Id }
+                };
+            }
+            else
+            {
+                var jobseeker = _context.JobSeekers.Select(e => new SelectListItem
+                {
+                    Text = e.FullName,
+                    Value = e.JobSeekerId.ToString()
+                }).ToList();
+
+                ViewData["JobSeekerId"] = new SelectList(jobseeker, "Value", "Text");
+            }
+            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
+
+            return View();
+        }
+        [HttpPost("CreateFromListing")]
+        public async Task<IActionResult> CreateFromListing(int jobId)
+        {
+            // Logic để tạo SelectList cho JobSeekerId
+            var user = await _userManager.GetUserAsync(User);
+            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            if (!isAdmin)
+            {
+                ViewData["JobSeekerId"] = new List<SelectListItem>
+                {
+                    new SelectListItem { Text = user.UserName, Value = user.Id }
+                };
+            }
+            else
+            {
+                var jobseeker = _context.JobSeekers.Select(e => new SelectListItem
+                {
+                    Text = e.FullName,
+                    Value = e.JobSeekerId.ToString()
+                }).ToList();
+
+                ViewData["JobSeekerId"] = new SelectList(jobseeker, "Value", "Text");
+            }
+
+            // Truyền JobId vào ViewData hoặc ViewBag
+            ViewData["JobId"] = jobId;
+
+            return View();
+        }
+
+
         // GET: JobApplications
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.JobApplications.Include(j => j.JobSeeker).Include(j => j.Listing);
-            return View(await applicationDbContext.ToListAsync());
+            //var applicationDbContext = _context.JobApplications.Include(j => j.JobSeeker).Include(j => j.Listing);
+            //return View(await applicationDbContext.ToListAsync());
+            if (!_signInManager.IsSignedIn(User))
+            {
+                return Redirect("/Identity/Account/Login");
+            }
+            var user = await _userManager.GetUserAsync(User);
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            bool isEmployer = await _userManager.IsInRoleAsync(user, "Employer");
+
+            IQueryable<JobApplication> jobapp = _context.JobApplications
+                .Include(a => a.Listing)
+                .Include(a => a.JobSeeker);
+            if (!isAdmin && !isEmployer)
+            {
+                jobapp = jobapp.Where(j => j.JobSeekerId == user.Id);
+            }
+            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
+            return View(await jobapp.ToListAsync());
         }
 
         // GET: JobApplications/Details/5
@@ -58,10 +150,34 @@ namespace Job1670.Controllers
         }
 
         // GET: JobApplications/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName");
-            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "JobId");
+            //ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName");
+            //ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
+            //return View();
+            var user = await _userManager.GetUserAsync(User);
+            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            if (!isAdmin)
+            {
+                ViewData["JobSeekerId"] = new List<SelectListItem>
+                {
+                     new SelectListItem { Text = user.UserName, Value = user.Id }
+                };
+            }
+            else
+            {
+                var jobseeker = _context.JobSeekers.Select(e => new SelectListItem
+                {
+                    Text = e.FullName,
+                    Value = e.JobSeekerId.ToString()
+                }).ToList();
+
+                ViewData["JobSeekerId"] = new SelectList(jobseeker, "Value", "Text");
+            }
+            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
+
             return View();
         }
 
@@ -75,7 +191,7 @@ namespace Job1670.Controllers
             if (!ModelState.IsValid)
             {
                 ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName", jobapp.JobSeekerId);
-                ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "JobId", jobapp.JobId);
+                ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title", jobapp.JobId);
                 return View(jobapp);
 
             }
@@ -105,7 +221,7 @@ namespace Job1670.Controllers
                 return NotFound();
             }
             ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName", jobApplication.JobSeekerId);
-            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "JobId", jobApplication.JobId);
+            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title", jobApplication.JobId);
             return View(jobApplication);
         }
 
@@ -119,7 +235,7 @@ namespace Job1670.Controllers
             if (!ModelState.IsValid)
             {
                 ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName", jobapp.JobSeekerId);
-                ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "JobId", jobapp.JobId);
+                ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title", jobapp.JobId);
                 return View(jobapp);
             }
 

@@ -22,6 +22,8 @@ namespace Job1670.Models
         [ForeignKey("JobSeekerId")]
         public virtual JobSeeker JobSeeker { get; set; }
 
+
+        [Column(TypeName = "nvarchar(max)")] // Đặt kiểu dữ liệu trong cơ sở dữ liệu là nvarchar(max) để hỗ trợ văn bản dài
         public string CoverLetter { get; set; }
 
         public string Status { get; set; }

@@ -4,8 +4,8 @@
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<h1>Index</h1>
+<partial name="_Alert" />
+<h1>Information of Employer</h1>
 
 @if (User.IsInRole("Master"))
 {
@@ -37,7 +37,7 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.EmployerId">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.EmployerId">Details</a> |
-                    @if (User.IsInRole("Admin"))
+                    @if (User.IsInRole("Admin") )
                     {
                         <a asp-action="Delete" asp-route-id="@item.EmployerId">Delete</a>
                     }

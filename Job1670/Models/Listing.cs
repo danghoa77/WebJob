@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Job1670.Data;
 
 namespace Job1670.Models
 {
@@ -28,5 +29,17 @@ namespace Job1670.Models
         public string Status { get; set; }
 
         public virtual ICollection<JobApplication> JobApplications { get; set; } = new List<JobApplication>();
+
+        public List<JobSeeker> GetAppliedJobSeekers(ApplicationDbContext context)
+        {
+            // Truy vấn các jobseeker dựa trên Id của listing và employer
+            var appliedJobSeekers = context.JobApplications
+                .Where(j => j.JobId == this.JobId && j.Listing.EmployerId == this.EmployerId)
+                .Select(j => j.JobSeeker)
+                .Distinct() // Loại bỏ các jobseeker trùng lặp
+                .ToList();
+
+            return appliedJobSeekers;
+        }
     }
 }

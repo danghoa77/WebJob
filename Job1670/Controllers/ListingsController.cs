@@ -17,10 +17,12 @@ namespace Job1670.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        public ListingsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        public ListingsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
         public class listModelBing
         {
@@ -39,24 +41,45 @@ namespace Job1670.Controllers
 
             public string Status { get; set; }
         }
+        // GET: Listings/ShowAppliedJobSeekers/{id}
+        public async Task<IActionResult> Index1()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
+            // Truy vấn danh sách các jobseeker đã apply vào các listing của employer đó
+            var appliedJobSeekers = await _context.JobApplications
+                .Where(j => j.Listing.EmployerId == user.Id)
+                .Select(j => j.JobSeeker)
+                .Distinct()
+                .ToListAsync();
+
+            return View(appliedJobSeekers);
+        }
         // GET: Listings
         public async Task<IActionResult> Index()
         {
+            
+            if (!_signInManager.IsSignedIn(User))
+            {
+                return Redirect("/Identity/Account/Login");
+            }
             var user = await _userManager.GetUserAsync(User);
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-            IQueryable<Listing> listings;
+            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
 
-            if (isAdmin)
-            {
-                listings = _context.Listings.Include(e => e.Employer);
-            }
-            else
-            {
-                listings = _context.Listings.Include(e => e.Employer)
-                                             .Where(e => e.EmployerId == user.Id);
-            }
+            IQueryable<Listing> listings = _context.Listings
+                                          .Include(l => l.Employer)
+                                          .Include(l => l.Category);
 
+            if (!isAdmin && !isJobSeeker)
+            {
+                listings = listings.Where(l => l.EmployerId == user.Id);
+            }
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
             return View(await listings.ToListAsync());
         }
 
@@ -81,33 +104,15 @@ namespace Job1670.Controllers
         }
 
         // GET: Listings/Create
-        public async Task<IActionResult> Create1()//lỗi viewbag
-        {
-            var user = await _userManager.GetUserAsync(User);
-            bool isEmployer = await _userManager.IsInRoleAsync(user, "Employer");
-
-            if (isEmployer)
-            {
-                ViewData["EmployerId"] = new SelectListItem { Text = user.Id, Value = user.Id };
-            }
-            else
-            {
-                var employers = _context.Employers.Select(e => new SelectListItem { Text = e.CompanyName, Value = e.EmployerId });
-                ViewData["EmployerId"] = new SelectList(employers, "Value", "Text");
-                ViewData["EmployerId"] = new SelectList(_context.Employers, "EmployerId", "EmployerId");
-            }
-
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
-
-            return View();
-        }
+        [HttpGet("Listings/Create")]
         [Authorize(Roles = "Admin,Employer")]
         public async Task<IActionResult> Create()// đã sửa 
         {
             var user = await _userManager.GetUserAsync(User);
             bool isEmployer = await _userManager.IsInRoleAsync(user, "Employer");
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
-            if (isEmployer)
+            if (!isAdmin)
             {
                 ViewData["EmployerId"] = new List<SelectListItem>
                 {
@@ -124,8 +129,6 @@ namespace Job1670.Controllers
 
                 ViewData["EmployerId"] = new SelectList(employers, "Value", "Text");
             }
-
-            // Populate categories dropdown
             ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
 
             return View();
@@ -135,15 +138,16 @@ namespace Job1670.Controllers
         // POST: Listings/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost("Listings/Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("EmployerId,CategoryId,Title,Deadline,Description,Status")] listModelBing listing)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid|| !_context.Categories.Any(c => c.CategoryId == listing.CategoryId && c.Status == "operating"))
             {
+                TempData["failed"] = "New jobs cannot be created with this category.";
                 ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryName", listing.CategoryId);
                 ViewData["EmployerId"] = new SelectList(_context.Employers, "EmployerId", "EmployerId", listing.EmployerId);
-                return View(listing);
+                return RedirectToAction(nameof(Index));
             }
             var list = new Listing
             {
@@ -156,8 +160,13 @@ namespace Job1670.Controllers
             };
             _context.Add(list);
             await _context.SaveChangesAsync();
+            TempData["success"] = "Create successful jobs.";
             return RedirectToAction(nameof(Index));
         }
+
+
+
+
         [Authorize(Roles = "Admin,Employer")]
         // GET: Listings/Edit/5
         [HttpGet("Listings/Edit/{id}")]
