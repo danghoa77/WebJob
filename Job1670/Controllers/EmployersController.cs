@@ -120,6 +120,7 @@ namespace Job1670.Controllers
 
                     _context.Add(emp);
                     await _context.SaveChangesAsync();
+                    TempData["success"] = "Successful.";
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -131,7 +132,7 @@ namespace Job1670.Controllers
                 }
             }
             ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id", employer.ApplicationUserId);
-            TempData["success"] = "Succesfully";
+            TempData["failed"] = "Unsuccessfull";
             return View(employer);
         }
         [Authorize(Roles = "Admin, Employer")]
@@ -156,11 +157,12 @@ namespace Job1670.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] employerModelBind employer)
+        public async Task<IActionResult> Edit(string? id, [Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] employerModelBind employer)
         {
             if (!ModelState.IsValid)
             {
                 ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id", employer.ApplicationUserId);
+                TempData["failed"] = "Unsuccessfull";
                 return View(employer);
             }
             var emp = await _context.Employers.FindAsync(id.ToString());
@@ -177,6 +179,7 @@ namespace Job1670.Controllers
 
             _context.Update(emp);
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles = "Admin")]
@@ -206,6 +209,7 @@ namespace Job1670.Controllers
         {
             if (_context.Employers == null)
             {
+                TempData["failed"] = "Unsuccessfull";
                 return Problem("Entity set 'ApplicationDbContext.Employers'  is null.");
             }
             var employer = await _context.Employers.FindAsync(id);
@@ -217,6 +221,7 @@ namespace Job1670.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
 

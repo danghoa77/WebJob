@@ -63,17 +63,17 @@
             <td>
                     @if (User.IsInRole("Admin"))
                     {
-                        <a asp-action="Edit" asp-route-id="@item.JobId">Edit</a>
-                    } |
+                        <a asp-action="Edit" asp-route-id="@item.JobId">| Edit</a>
+                    } 
 
-                <a asp-action="Details" asp-route-id="@item.JobId">Details</a> 
+                <a asp-action="Details" asp-route-id="@item.JobId">| Details</a> 
                     @if (User.IsInRole("Admin") || User.IsInRole("Employer"))
                     {
-                        <a asp-action="Delete" asp-route-id="@item.JobId">Delete</a>
+                        <a asp-action="Delete" asp-route-id="@item.JobId">| Delete</a>
                     }
                     @if (User.IsInRole("JobSeeker") )
                     {
-                        <a asp-controller="JobApplications" asp-action="Apply" asp-route-id="@item.JobId">Apply</a>
+                        <a asp-controller="JobApplications" asp-action="Create" asp-route-id="@item.JobId">| Apply</a>
                     }
             </td>
         </tr>

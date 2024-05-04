@@ -119,6 +119,7 @@ namespace Job1670.Controllers
 
                     _context.Add(jobSeeker);
                     await _context.SaveChangesAsync();
+                    TempData["success"] = "Successful.";
                     return RedirectToAction(nameof(Index));
                 }
                 else
@@ -130,6 +131,7 @@ namespace Job1670.Controllers
                 }
             }
             ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id", jobSeekerModel.ApplicationUserId);
+            TempData["failed"] = "Unsuccessfull";
             return View(jobSeekerModel);
         }
 
@@ -162,7 +164,8 @@ namespace Job1670.Controllers
             if (!ModelState.IsValid)
             {
                 ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "Id", jobSeeker.ApplicationUserId);
-                return View(jobSeeker);
+                TempData["failed"] = "Unsuccessfull";
+                return RedirectToAction(nameof(Index));
             }
             var jobs = await _context.JobSeekers.FindAsync(id.ToString());
             if (jobs == null)
@@ -179,6 +182,7 @@ namespace Job1670.Controllers
 
             _context.Update(jobs);
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles = "Admin")]
@@ -206,10 +210,6 @@ namespace Job1670.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            if (_context.JobSeekers == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.JobSeekers'  is null.");
-            }
 
             var jobSeeker = await _context.JobSeekers
                 .Include(j => j.ApplicationUser)
@@ -225,6 +225,7 @@ namespace Job1670.Controllers
                         var result = await _userManager.DeleteAsync(user);
                         if (!result.Succeeded)
                         {
+                            TempData["failed"] = "Unsuccessfull";
                             return Problem("Failed to delete the associated user.");
                         }
                     }
@@ -232,6 +233,7 @@ namespace Job1670.Controllers
 
                 _context.JobSeekers.Remove(jobSeeker);
                 await _context.SaveChangesAsync();
+                TempData["success"] = "Successful.";
                 return RedirectToAction(nameof(Index));
             }
             return NotFound();

@@ -35,81 +35,9 @@ namespace Job1670.Controllers
 
             public string Status { get; set; }
         }
-
-        public async Task<IActionResult> Apply()
-        {
-            int selectedJobId = 1; // Thay đổi giá trị này bằng cách lấy JobId từ form hoặc dữ liệu khác
-
-            return RedirectToAction("CreateFromListing", "JobApplications", new { jobId = selectedJobId });
-        }
-        public async Task<IActionResult> CreateFromListing()
-        {
-            //ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName");
-            //ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
-            //return View();
-            var user = await _userManager.GetUserAsync(User);
-            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
-            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-
-            if (!isAdmin)
-            {
-                ViewData["JobSeekerId"] = new List<SelectListItem>
-                {
-                     new SelectListItem { Text = user.UserName, Value = user.Id }
-                };
-            }
-            else
-            {
-                var jobseeker = _context.JobSeekers.Select(e => new SelectListItem
-                {
-                    Text = e.FullName,
-                    Value = e.JobSeekerId.ToString()
-                }).ToList();
-
-                ViewData["JobSeekerId"] = new SelectList(jobseeker, "Value", "Text");
-            }
-            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
-
-            return View();
-        }
-        [HttpPost("CreateFromListing")]
-        public async Task<IActionResult> CreateFromListing(int jobId)
-        {
-            // Logic để tạo SelectList cho JobSeekerId
-            var user = await _userManager.GetUserAsync(User);
-            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
-            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-
-            if (!isAdmin)
-            {
-                ViewData["JobSeekerId"] = new List<SelectListItem>
-                {
-                    new SelectListItem { Text = user.UserName, Value = user.Id }
-                };
-            }
-            else
-            {
-                var jobseeker = _context.JobSeekers.Select(e => new SelectListItem
-                {
-                    Text = e.FullName,
-                    Value = e.JobSeekerId.ToString()
-                }).ToList();
-
-                ViewData["JobSeekerId"] = new SelectList(jobseeker, "Value", "Text");
-            }
-
-            // Truyền JobId vào ViewData hoặc ViewBag
-            ViewData["JobId"] = jobId;
-
-            return View();
-        }
-
-
         // GET: JobApplications
         public async Task<IActionResult> Index()
         {
-            //var applicationDbContext = _context.JobApplications.Include(j => j.JobSeeker).Include(j => j.Listing);
-            //return View(await applicationDbContext.ToListAsync());
             if (!_signInManager.IsSignedIn(User))
             {
                 return Redirect("/Identity/Account/Login");
@@ -149,61 +77,61 @@ namespace Job1670.Controllers
             return View(jobApplication);
         }
 
+        [HttpGet, ActionName("Create")]
         // GET: JobApplications/Create
         public async Task<IActionResult> Create()
         {
-            //ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName");
-            //ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
-            //return View();
             var user = await _userManager.GetUserAsync(User);
-            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+            bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
 
-            if (!isAdmin)
+            if (isAdmin)
             {
-                ViewData["JobSeekerId"] = new List<SelectListItem>
-                {
-                     new SelectListItem { Text = user.UserName, Value = user.Id }
-                };
+                ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
+                ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName");
             }
-            else
+            else if (isJobSeeker)
             {
-                var jobseeker = _context.JobSeekers.Select(e => new SelectListItem
-                {
-                    Text = e.FullName,
-                    Value = e.JobSeekerId.ToString()
-                }).ToList();
-
-                ViewData["JobSeekerId"] = new SelectList(jobseeker, "Value", "Text");
+                var jobSeekerId = user.Id;
+                var jobId = _context.JobApplications.FirstOrDefault(j => j.JobSeekerId == jobSeekerId)?.JobId;
+                ViewData["JobId"] = new SelectList(new List<Listing> { _context.Listings.Find(jobId) }, "JobId", "Title");
+                ViewData["JobSeekerId"] = new SelectList(new List<JobSeeker> { _context.JobSeekers.Find(jobSeekerId) }, "JobSeekerId", "FullName");
             }
-            ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title");
-
             return View();
         }
+
 
         // POST: JobApplications/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost, ActionName("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("JobId,JobSeekerId,CoverLetter,Status")] jobappModelBind jobapp)
+        public async Task<IActionResult> Create(int id, [Bind("JobId, JobSeekerId,CoverLetter,Status")] jobappModelBind jobapp)
         {
+            var listing = await _context.Listings.FirstOrDefaultAsync(c => c.JobId == id && c.Status == "operating");
+            if (listing == null)
+            {
+                TempData["failed"] = "Cannot create job application because the listing is not in operating status.";
+                return RedirectToAction(nameof(Index));
+            }
             if (!ModelState.IsValid)
             {
                 ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName", jobapp.JobSeekerId);
                 ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title", jobapp.JobId);
+                TempData["failed"] = "Unsuccessfull";
                 return View(jobapp);
 
             }
             var jobApplication = new JobApplication
             {
-                JobId = jobapp.JobId,
+                JobId = id,
                 JobSeekerId = jobapp.JobSeekerId,
                 CoverLetter = jobapp.CoverLetter,
                 Status = jobapp.Status,
             };
             _context.Add(jobApplication);
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -236,6 +164,7 @@ namespace Job1670.Controllers
             {
                 ViewData["JobSeekerId"] = new SelectList(_context.JobSeekers, "JobSeekerId", "FullName", jobapp.JobSeekerId);
                 ViewData["JobId"] = new SelectList(_context.Listings, "JobId", "Title", jobapp.JobId);
+                TempData["failed"] = "Unsuccessfull";
                 return View(jobapp);
             }
 
@@ -251,6 +180,7 @@ namespace Job1670.Controllers
 
             _context.Update(jobApplication);
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -281,6 +211,7 @@ namespace Job1670.Controllers
         {
             if (_context.JobApplications == null)
             {
+                TempData["failed"] = "Unsuccessfull";
                 return Problem("Entity set 'ApplicationDbContext.JobApplications'  is null.");
             }
             var jobApplication = await _context.JobApplications.FindAsync(id);
@@ -290,6 +221,7 @@ namespace Job1670.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
 

@@ -45,13 +45,13 @@
                 @Html.DisplayFor(modelItem => item.Status)
             </td>
             <td>
-                    @if (User.IsInRole("Admin"))
+                    @if (User.IsInRole("Admin") || User.IsInRole("Employer"))
                     {
                         <a asp-action="Edit" asp-route-id="@item.JobApplicationId">Edit</a>
                     } |
 
                     <a asp-action="Details" asp-route-id="@item.JobApplicationId">Details</a>|
-                    @if (User.IsInRole("Admin") || User.IsInRole("JobSeeker"))
+                    @if (User.IsInRole("Admin") )
                     {
                         <a asp-action="Delete" asp-route-id="@item.JobApplicationId">Delete</a>
                     }

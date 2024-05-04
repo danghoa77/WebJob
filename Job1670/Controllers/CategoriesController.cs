@@ -98,24 +98,12 @@ namespace Job1670.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(category.CategoryId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+             _context.Update(category);
+             await _context.SaveChangesAsync();
+                TempData["success"] = "Successful.";
                 return RedirectToAction(nameof(Index));
             }
+            TempData["failed"] = "Unsuccessfull";
             return View(category);
         }
         [Authorize(Roles = "Admin")]
@@ -144,6 +132,7 @@ namespace Job1670.Controllers
         {
             if (_context.Categories == null)
             {
+                TempData["failed"] = "Unsuccessfull";
                 return Problem("Entity set 'ApplicationDbContext.Categories'  is null.");
             }
             var category = await _context.Categories.FindAsync(id);
@@ -153,6 +142,7 @@ namespace Job1670.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
 

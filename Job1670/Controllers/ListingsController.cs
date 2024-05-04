@@ -41,24 +41,6 @@ namespace Job1670.Controllers
 
             public string Status { get; set; }
         }
-        // GET: Listings/ShowAppliedJobSeekers/{id}
-        public async Task<IActionResult> Index1()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            // Truy vấn danh sách các jobseeker đã apply vào các listing của employer đó
-            var appliedJobSeekers = await _context.JobApplications
-                .Where(j => j.Listing.EmployerId == user.Id)
-                .Select(j => j.JobSeeker)
-                .Distinct()
-                .ToListAsync();
-
-            return View(appliedJobSeekers);
-        }
         // GET: Listings
         public async Task<IActionResult> Index()
         {
@@ -106,7 +88,7 @@ namespace Job1670.Controllers
         // GET: Listings/Create
         [HttpGet("Listings/Create")]
         [Authorize(Roles = "Admin,Employer")]
-        public async Task<IActionResult> Create()// đã sửa 
+        public async Task<IActionResult> Create()
         {
             var user = await _userManager.GetUserAsync(User);
             bool isEmployer = await _userManager.IsInRoleAsync(user, "Employer");
@@ -215,6 +197,7 @@ namespace Job1670.Controllers
             {
                 ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryName", model.CategoryId);
                 ViewData["EmployerId"] = new SelectList(_context.Employers, "EmployerId", "CompanyName", model.EmployerId);
+                TempData["failed"] = "Unsuccessfull";
                 return View(model);
             }
 
@@ -234,6 +217,7 @@ namespace Job1670.Controllers
 
             _context.Update(listing);
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles ="Admin")]
@@ -264,6 +248,7 @@ namespace Job1670.Controllers
         {
             if (_context.Listings == null)
             {
+                TempData["failed"] = "Unsuccessfull";
                 return Problem("Entity set 'ApplicationDbContext.Listings'  is null.");
             }
             var listing = await _context.Listings.FindAsync(id);
@@ -273,6 +258,7 @@ namespace Job1670.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["success"] = "Successful.";
             return RedirectToAction(nameof(Index));
         }
 
