@@ -33,13 +33,15 @@ namespace Job1670.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         public RegisterModel(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _userManager = userManager;
@@ -48,6 +50,7 @@ namespace Job1670.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         /// <summary>
@@ -91,6 +94,7 @@ namespace Job1670.Areas.Identity.Pages.Account
             public string JobSeekerDetail { get; set; }
             public string JobSeekerPhone { get; set; }
             public string JobSeekerCV { get; set; }
+
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -211,7 +215,7 @@ namespace Job1670.Areas.Identity.Pages.Account
                     throw new Exception("Failed to create user.");
                 }
             }
-            return Page();
+            return Page();          
         }
 
         private ApplicationUser CreateUser()

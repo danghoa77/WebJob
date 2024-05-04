@@ -1,4 +1,6 @@
-﻿namespace Job1670.Services
+﻿using Job1670.Services.ImagesService;
+
+namespace Job1670.Services
 {
     public class FileService : IFileService
     {

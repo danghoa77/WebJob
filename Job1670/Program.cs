@@ -1,5 +1,7 @@
 using Job1670.Data;
 using Job1670.Services;
+using Job1670.Services.CVService;
+using Job1670.Services.ImagesService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +17,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
-
+builder.Services.AddScoped<IPdfFileService, PdfFileService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();

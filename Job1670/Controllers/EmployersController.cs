@@ -15,12 +15,14 @@ namespace Job1670.Controllers
 {
     public class EmployersController : Controller
     {
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         public EmployersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
             _context = context;
+
         }
 
         public class employerModelBind
@@ -81,7 +83,7 @@ namespace Job1670.Controllers
             return View(employer);
         }
         [Authorize(Roles = "Master")]
-
+        [HttpGet,ActionName("Create")]
         // GET: Employers/Create
         public IActionResult Create()
         {
@@ -93,7 +95,7 @@ namespace Job1670.Controllers
         // POST: Employers/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost,ActionName("Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] employerModelBind employer)
         {
@@ -136,7 +138,7 @@ namespace Job1670.Controllers
             return View(employer);
         }
         [Authorize(Roles = "Admin, Employer")]
-        [AcceptVerbs("GET", "POST", Route = "Employer/Edit/{id}")]
+        [HttpGet,ActionName("Edit")]
         public async Task<IActionResult> Edit(string? id)
         {
             if (id == null || _context.Employers == null)
@@ -156,6 +158,7 @@ namespace Job1670.Controllers
         // POST: Employers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost,ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string? id, [Bind("CompanyName,Address,Detail,Phone,Email,ApplicationUserId")] employerModelBind employer)
         {

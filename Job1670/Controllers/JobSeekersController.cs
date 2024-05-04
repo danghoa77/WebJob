@@ -17,12 +17,36 @@ namespace Job1670.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-
-        public JobSeekersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public JobSeekersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment webHostEnvironment)
         {
             _userManager = userManager;
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
+        //[HttpPost]
+        //public async Task<IActionResult> AddCV(IFormFile cvFile)
+        //{
+        //    if (cvFile != null && cvFile.Length > 0)
+        //    {
+        //        var fileName = $"{Guid.NewGuid().ToString()}.pdf";
+        //        var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "cv", fileName);
+
+        //        using (var stream = new FileStream(filePath, FileMode.Create))
+        //        {
+        //            await cvFile.CopyToAsync(stream);
+        //        }
+
+        //        // Lưu đường dẫn của CV vào JobSeeker
+        //        var jobSeeker = await _context.JobSeekers.FirstOrDefaultAsync();
+        //        jobSeeker.CV = filePath; // Lưu đường dẫn tuyệt đối của tệp
+        //        await _context.SaveChangesAsync();
+        //        return RedirectToAction("Edit", new { id = jobSeeker.JobSeekerId });
+        //    }
+        //    return RedirectToAction("Edit");
+        //}
+
+
         public class jobseekerModelBind
         {           
             [Required]
@@ -80,6 +104,7 @@ namespace Job1670.Controllers
             return View(jobSeeker);
         }
         [Authorize(Roles = "Admin")]
+        [HttpGet,ActionName("Create")]
         // GET: JobSeekers/Create
         public IActionResult Create()
         {
@@ -92,7 +117,7 @@ namespace Job1670.Controllers
         // POST: JobSeekers/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost,ActionName("Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind(" FullName,Phone,Address,Detail,Email,CV,ApplicationUserId")] jobseekerModelBind jobSeekerModel)
         {
@@ -137,7 +162,7 @@ namespace Job1670.Controllers
 
         [Authorize(Roles = "Admin, JobSeeker")]
         // GET: JobSeekers/Edit/5
-        [AcceptVerbs("GET", "POST", Route = "JobSeeker/Edit/{id}")]
+        [HttpGet,ActionName("Edit")]
         public async Task<IActionResult> Edit(string? id)
         {
             if (id == null || _context.JobSeekers == null)
@@ -157,7 +182,7 @@ namespace Job1670.Controllers
         // POST: JobSeekers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-
+        [HttpPost,ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("FullName,Phone,Address,Detail,Email,CV,ApplicationUserId")] jobseekerModelBind jobSeeker)
         {

@@ -1,4 +1,4 @@
-﻿namespace Job1670.Services
+﻿namespace Job1670.Services.ImagesService
 {
     public interface IFileService
     {
