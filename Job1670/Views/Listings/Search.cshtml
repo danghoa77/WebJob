@@ -1,0 +1,54 @@
+﻿@model IEnumerable<Job1670.Models.Listing>
+<style>
+    .table th, .table td {
+        padding: 12px; /* Tăng padding cho mỗi ô */
+        vertical-align: middle; /* Căn giữa nội dung trong ô theo chiều dọc */
+    }
+
+    .table th {
+        background-color: #f8f9fa; /* Màu nền cho tiêu đề bảng */
+        color: #333; /* Màu chữ cho tiêu đề */
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1; /* Màu nền khi hover vào hàng */
+    }
+
+</style>
+<h3 style="margin-top:1em; margin-bottom: 2em;">Search Results</h3>
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                        <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                        <td><time datetime="@item.Deadline.ToString("yyyy-MM-dd")">@item.Deadline.ToShortDateString()</time></td>
+                        <td>@Html.DisplayFor(modelItem => item.Status)</td>
+                        <td>
+                            <a class="btn btn-primary" asp-controller="JobApplications" asp-action="Create" asp-route-id="@item.JobId">Apply</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">No results found.</div>
+}
+

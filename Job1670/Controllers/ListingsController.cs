@@ -41,13 +41,33 @@ namespace Job1670.Controllers
 
             public string Status { get; set; }
         }
+
+        public IActionResult Search(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 2)
+            {
+                ViewBag.ErrorMessage = "Please enter Valid.";
+                return View(new List<Listing>());
+            }
+
+            var listings = _context.Listings
+                                .Where(s => s.Title.Contains(searchTerm))
+                                .ToList();
+
+            if (!listings.Any())
+            {
+                return View("Search", listings);
+            }
+            return View("Search", listings);
+        }
         // GET: Listings
         public async Task<IActionResult> Index()
         {
             
             if (!_signInManager.IsSignedIn(User))
             {
-                return Redirect("/Identity/Account/Login");
+                var applicationDbContext = _context.Listings.Include(l => l.Category).Include(l => l.Employer);
+                return View(await applicationDbContext.ToListAsync());
             }
             var user = await _userManager.GetUserAsync(User);
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");

@@ -81,6 +81,11 @@ namespace Job1670.Controllers
         // GET: JobApplications/Create
         public async Task<IActionResult> Create()
         {
+            if (!_signInManager.IsSignedIn(User))
+            {
+                return Redirect("/Identity/Account/Login");
+            }
+            else { 
             var user = await _userManager.GetUserAsync(User);
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
             bool isJobSeeker = await _userManager.IsInRoleAsync(user, "JobSeeker");
@@ -97,7 +102,9 @@ namespace Job1670.Controllers
                 ViewData["JobId"] = new SelectList(new List<Listing> { _context.Listings.Find(jobId) }, "JobId", "Title");
                 ViewData["JobSeekerId"] = new SelectList(new List<JobSeeker> { _context.JobSeekers.Find(jobSeekerId) }, "JobSeekerId", "FullName");
             }
+           
             return View();
+            }
         }
 
 
