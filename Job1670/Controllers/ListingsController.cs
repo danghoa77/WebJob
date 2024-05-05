@@ -46,7 +46,6 @@ namespace Job1670.Controllers
         {
             if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 2)
             {
-                ViewBag.ErrorMessage = "Please enter Valid.";
                 return View(new List<Listing>());
             }
 
