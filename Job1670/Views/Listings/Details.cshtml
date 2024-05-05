@@ -51,7 +51,7 @@
 </div>
 <div>
     @if (User.IsInRole("Employer") || User.IsInRole("Admin")){
-    <a asp-action="Edit" asp-route-id="@Model?.JobId">Edit</a>
+        <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model?.JobId">Edit</a>
     }
-    <a asp-action="Index">Back to List</a>
+    <a class="btn btn-secondary" asp-action="Index">Back to List</a>
 </div>
