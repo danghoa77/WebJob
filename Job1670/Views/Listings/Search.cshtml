@@ -40,7 +40,7 @@
                         <td>@Html.DisplayFor(modelItem => item.Status)</td>
                         <td>
                             @if(User.IsInRole("JobSeeker")){
-                            <a class="btn btn-primary" asp-controller="JobApplications" asp-action="Create" asp-route-id="@item.JobId">Apply</a>
+                            <a class="btn btn-secondary" asp-controller="JobApplications" asp-action="Create" asp-route-id="@item.JobId">Apply</a>
                             }
                         </td>
                     </tr>

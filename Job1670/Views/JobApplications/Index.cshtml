@@ -9,7 +9,7 @@
 
 @if (User.IsInRole("Admin"))
 {
-    <a asp-action="Create">Create New</a>
+    <a class="btn btn-primary" asp-action="Create">Create New</a>
 }
 <table class="table">
     <thead>
@@ -47,13 +47,13 @@
             <td>
                     @if (User.IsInRole("Admin") || User.IsInRole("Employer"))
                     {
-                        <a asp-action="Edit" asp-route-id="@item.JobApplicationId">Edit</a>
-                    } |
+                        <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@item.JobApplicationId">Edit</a>
+                    } 
 
-                    <a asp-action="Details" asp-route-id="@item.JobApplicationId">Details</a>|
+                    <a class="btn btn-secondary" asp-action="Details" asp-route-id="@item.JobApplicationId">Details</a>
                     @if (User.IsInRole("Admin") )
                     {
-                        <a asp-action="Delete" asp-route-id="@item.JobApplicationId">Delete</a>
+                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.JobApplicationId">Delete</a>
                     }
             </td>
         </tr>

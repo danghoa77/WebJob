@@ -38,8 +38,7 @@
 <div>
     @if (User.IsInRole("Admin"))
     {
-            <a asp-action="Edit" asp-route-id="@Model?.JobApplicationId">| Edit</a>
+        <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@Model?.JobApplicationId"> Edit</a>
     }
-    <a asp-action="Index">Back to List</a>
     <a asp-action="Index">Back to List</a>
 </div>
